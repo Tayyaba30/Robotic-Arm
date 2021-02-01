@@ -1,4 +1,9 @@
-
+/*
+MPU6050.cpp - Class file for the MPU6050 Triple Axis Gyroscope & Accelerometer Arduino Library.
+Version: 1.0.3
+(c) 2014-2015 Korneliusz Jarzebski
+www.jarzebski.pl
+*/
 #include <RFM69.h>         
 #include <RFM69_ATC.h>     
 #include <SPI.h>          
