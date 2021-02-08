@@ -1,4 +1,8 @@
 // Include the required Wire library for I2C<br>
+// Based on InvenSense MPU-6050 register map document rev. 2.0, 5/19/2011 (RM-MPU-6000A-00)
+// 10/3/2011 by Jeff Rowberg <jeff@rowberg.net>
+// Updates should (hopefully) always be available at https://github.com/jrowberg/i2cdevlib
+
 #include<Wire.h>
 //#include <MPU6050.h>
 
