@@ -136,7 +136,7 @@ void RollTask(int task){
     degreesAngle[task] = roll;
 }
 
-void (*tasks[])(int) = {PitchTask, RollTask, PitchTask, RollTask};
+void (*tasks[])(int) = {PitchTask, PitchTask, RollTask, RollTask};
 
 int taskCount = 4;
 void genericOS()
