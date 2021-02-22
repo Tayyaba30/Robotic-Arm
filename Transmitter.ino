@@ -93,9 +93,9 @@ void PitchTask(int task){
   }
 
     //read accelerometer data
-    int16_t AcX=Wire.read()<<8|Wire.read(); // 0x3B (ACCEL_XOUT_H) 0x3C (ACCEL_XOUT_L)  
-    int16_t AcY=Wire.read()<<8|Wire.read(); // 0x3D (ACCEL_YOUT_H) 0x3E (ACCEL_YOUT_L) 
-    int16_t AcZ=Wire.read()<<8|Wire.read(); // 0x3F (ACCEL_ZOUT_H) 0x40 (ACCEL_ZOUT_L)
+    int16_t AcX=Wire.read()<<8|Wire.read(); 
+    int16_t AcY=Wire.read()<<8|Wire.read(); 
+    int16_t AcZ=Wire.read()<<8|Wire.read(); 
     double x = AcX;
     double y = AcY;
     double z = AcZ;
@@ -123,9 +123,9 @@ void RollTask(int task){
   }
 
     //read accelerometer data
-    int16_t AcX=Wire.read()<<8|Wire.read(); // 0x3B (ACCEL_XOUT_H) 0x3C (ACCEL_XOUT_L)  
-    int16_t AcY=Wire.read()<<8|Wire.read(); // 0x3D (ACCEL_YOUT_H) 0x3E (ACCEL_YOUT_L) 
-    int16_t AcZ=Wire.read()<<8|Wire.read(); // 0x3F (ACCEL_ZOUT_H) 0x40 (ACCEL_ZOUT_L)
+    int16_t AcX=Wire.read()<<8|Wire.read();  
+    int16_t AcY=Wire.read()<<8|Wire.read(); 
+    int16_t AcZ=Wire.read()<<8|Wire.read();
     double x = AcX;
     double y = AcY;
     double z = AcZ;
