@@ -1,8 +1,14 @@
-//45 with first value
-//6, wit j seconf
-//7 = thirs
-//8 = last
-
+/* CREDITS
+ * nRF24L01 library
+ * Author: Charles-Henri Hallard
+ * http://nRF24.github.io/RF24
+ * 
+ * Transmitter setup example taken from:
+ * https://create.arduino.cc/projecthub/muhammad-aqib/nrf24l01-interfacing-with-arduino-wireless-communication-0c13d4
+ * Author:Muhammad Aqib Dutt
+ * 
+ * 
+*/
 
 #include <Servo.h>
 #include <SPI.h>
@@ -11,37 +17,40 @@
 RF24 radio(9, 10); // CE, CSN
 const byte address[6] = "00001";
 
-Servo servo0;  // pitch mpu 1
-Servo servo1;  // pitch mpu 2
-Servo servo2;  // roll mpu 1
-Servo servo3;  // roll mpu 2
-//                      pitch 1, pitch 2, roll 1, roll2
-Servo SERVO_PORTS[4] = {servo0, servo1, servo2, servo3};
+Servo servo0;
+Servo servo1;
+Servo servo2;
+Servo servo3;
+Servo servo4;
+
+const Servo SERVO_PORTS[] = {servo0, servo1, servo2, servo3, servo4};
+
+//static const int RECORD_SIZE = 5;  // the bigger this number is the more stray inputs are removed at the cost of delay
 const int MOTOR_COUNT = 4;
-byte data[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+//int record_sets[RECORD_SIZE][MOTOR_COUNT];    // used to average the value for the degree    
+//int record_index = 0;   
 
 void setup() {
 
   Serial.begin(9600);
   radio.begin();
-  radio.openReadingPipe(0, address);   //Setting the address at which we will receive the data
-  radio.setPALevel(RF24_PA_MIN);       //You can set this as minimum or maximum depending on the distance between the transmitter and receiver.
-  radio.startListening();              //This sets the module as receiver
+  radio.openReadingPipe(0, address);   
+  radio.setPALevel(RF24_PA_MIN);       
+  radio.startListening();              
 
-//data:  4 5 6 7
-//ports: 6 5 7 4 
-
-   servo0.attach(6); //pitch1
-   servo1.attach(5); //pitch2
-   servo2.attach(7); //roll1
-   servo3.attach(4); //roll2
+   servo0.attach(2, 1000, 2000);
+   servo1.attach(3, 1000, 2000);
+   servo2.attach(4, 1000, 2000);
+   servo3.attach(5, 1000, 2000); 
+//   servo4.attach(7, 1000, 2000); 
 
     servo0.write(90);
     servo1.write(90);
     servo2.write(90);
     servo3.write(90);
-    
-    delay(100);
+  
+
+    delay(1000);
 }
 
 
@@ -50,13 +59,20 @@ void loop()
 {
   if (radio.available())              //Looking for the data.
   {
-                     //Saving the incoming data
-    radio.read(&data, sizeof(data));    //Reading the data
+    byte text[9];                 //Saving the incoming data
+    radio.read(&text, sizeof(text));    //Reading the data
+    
+    Serial.println(text[1]);
+    Serial.println(text[2]);
 
-
-    for(int i = 0; i < MOTOR_COUNT; ++i) 
+    for(int i = 0; i < 4; ++i)
     {
-      SERVO_PORTS[i].write(data[i+4]);
+      SERVO_PORTS[i].write(text[i]);
     }
+  
   }
+
+
+  
+  delay(100);
 }
