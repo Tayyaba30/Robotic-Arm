@@ -7,23 +7,8 @@
  * https://create.arduino.cc/projecthub/muhammad-aqib/nrf24l01-interfacing-with-arduino-wireless-communication-0c13d4
  * Author:Muhammad Aqib Dutt
  * 
- * Mux_Analog_Output
- * SparkFun Multiplexer Output Example
- * Jim Lindblom @ SparkFun Electronics
- * August 15, 2016
- * https://github.com/sparkfun/74HC4051_8-Channel_Mux_Breakout
- * 
  * 
 */
-
-//OS information Part1
-// flex sensor 1: straight = 900(968), Bent 180 degree = 980 (937)
-// flex sensor 2: straight = 913, Bent 180 Degree = 980  
-// flex sensor 3: straight = 4315.09, Bent 180 Degree = 687.21
-// flex sensor 4: straight = 910, Bent 180 Degree = 890
-// flex sensor 5: straight = 884, Bent 180 Degree = 1000
-
-
 
 #include <SPI.h>
 #include <nRF24L01.h>
@@ -31,20 +16,19 @@
 #include <Wire.h>
 #include <math.h>
 
-//PIN definitions for MUX
 const int selectPins[4] = {5, 4, 3, 2}; // S0~2, S1~3, S2~4
 const int zInput = A0; // Connect common (Z) to 5 (PWM-capable)
-
-#define TOTAL_FLEX_TASKS 4
-#define TASK_COUNT 8
 
 const float VCC = 5; // Measured voltage of Ardunio 5V line
 const float R_DIV = 47000.0; // Measured resistance of 47k resistor
 
-const float FlexValues[5][3] = {{870.0, 990.0, 0}, {890.0, 990.0,0}, {920.0, 870.0, 1}, {870.0, 1010.0, 0}, {4000.0, 1800.0, 0}}; 
+#define TOTAL_FLEX_TASKS 5
+#define TASK_COUNT 9
 
-byte degreesAngle[8] = {0, 0, 0, 0, 0, 0};
+const float FlexValues[5][3] = {{920.0, 1025.0, 0}, {910.0, 1015.0,0}, {850.0, 1015.0, 1}, {900.0, 1020.0, 0}, {880.0, 1015.0, 0}}; 
 
+
+byte degreesAngle[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 volatile int flag_count = 0;
 
 const int MPU=0x68;
@@ -58,8 +42,7 @@ void setup() {
   radio.begin();                 
   radio.openWritingPipe(address); 
   radio.setPALevel(RF24_PA_MIN); 
-  radio.stopListening();  
-
+  radio.stopListening();          
 // MUX setUp
   // Set up the select pins, as outputs
   for (int i=0; i<4; i++)
@@ -68,8 +51,6 @@ void setup() {
     digitalWrite(selectPins[i], HIGH);
   }
   pinMode(zInput, INPUT); // Set up Z as an input
-
-
 
 
 // MPU 1 Setup
@@ -82,7 +63,7 @@ void setup() {
 
 
 // MPU 2 Setup
-    Wire.begin(); 
+//    Wire.begin(); 
     Wire.beginTransmission(MPU2); 
     Wire.write(0x6B); 
     Wire.write(0);   
@@ -114,7 +95,6 @@ ISR(TIMER0_COMPA_vect)
   TCNT0 = 0;
 }
 
-
 void selectMuxPin(byte pin)
 {
   if (pin > 15) 
@@ -128,64 +108,6 @@ void selectMuxPin(byte pin)
   }
 
 }
-
-
-
-struct flexTask{
-  int taskNumber;     // stores the task
-  float STRAIGHT_RESISTANCE;
-  float BEND_RESISTANCE;
-  int set_degrees;    // Stores  what degree to set the motor to
-  //static const int RECORD_SIZE = 10;  // the bigger this number is the more stray inputs are removed at the cost of delay
-  //bool record_sets[RECORD_SIZE];    // used to average the value for the degree    
-  //int record_index = 0;   
-  int flexADC;
-  int increasing = 0;
-  void setVal(float Straight, float Bent, int inc)
-  {
-    STRAIGHT_RESISTANCE = Straight;
-    BEND_RESISTANCE = Bent;
-    increasing = inc;
-  }
-
-  void getCase()
-  {
-
-      byte t = (byte)taskNumber;
-      selectMuxPin(t);
-      flexADC = analogRead(A0);     
-
-    float flexV = flexADC * VCC / 1023.0;
-    float flexR = R_DIV * (VCC / flexV - 1.0);
-    // Serial.println("original: " + String(flexADC));
-    //  Serial.println("Resistance: " + String(flexR) + " ohms");
-
-    if(increasing == 0)
-    {
-      set_degrees = map(flexR, STRAIGHT_RESISTANCE, BEND_RESISTANCE, 0, 180);    
-    }
-    else
-    {
-      set_degrees = map(flexR,  BEND_RESISTANCE, STRAIGHT_RESISTANCE, 0, 180);
-    }
-    set_degrees = constrain(set_degrees, 20, 160);
-    //  Serial.println("Bend: " + String(set_degrees) + " degrees"); 
-    degreesAngle[taskNumber] = set_degrees; //setting to 180 or 0 may change the cone
-  }
-};
-
-struct flexTask flexPerform[TOTAL_FLEX_TASKS];
-
-void FlexSensorTask(int task){
-  flexPerform[task].taskNumber = task;
-  flexPerform[task].setVal(FlexValues[task][0], FlexValues[task][1], FlexValues[task][1]);
-  
- // flexPerform[task].flexADC = analogRead(FlexPorts[task]);
-
-  flexPerform[task].getCase();
-
-}
-
 
 void PitchTask(int task){
   if(task%2 == 0)
@@ -204,9 +126,9 @@ void PitchTask(int task){
   }
 
     //read accelerometer data
-    int16_t AcX=Wire.read()<<8|Wire.read(); // 0x3B (ACCEL_XOUT_H) 0x3C (ACCEL_XOUT_L)  
-    int16_t AcY=Wire.read()<<8|Wire.read(); // 0x3D (ACCEL_YOUT_H) 0x3E (ACCEL_YOUT_L) 
-    int16_t AcZ=Wire.read()<<8|Wire.read(); // 0x3F (ACCEL_ZOUT_H) 0x40 (ACCEL_ZOUT_L)
+    int16_t AcX=Wire.read()<<8|Wire.read(); 
+    int16_t AcY=Wire.read()<<8|Wire.read(); 
+    int16_t AcZ=Wire.read()<<8|Wire.read(); 
     double x = AcX;
     double y = AcY;
     double z = AcZ;
@@ -214,8 +136,8 @@ void PitchTask(int task){
     double pitch = atan(y/sqrt((x*x) + (z*z))) * (180.0/3.14) ; 
     pitch = map(pitch, -60, 60, 20, 160);
     pitch = constrain(pitch, 20, 160);
-    degreesAngle[task] = pitch;
 
+    degreesAngle[task] = pitch;
 }
  
 void RollTask(int task){
@@ -246,24 +168,81 @@ void RollTask(int task){
     roll = map(roll, -60, 60, 20, 160);
     roll = constrain(roll, 20, 160);
     degreesAngle[task] = roll;
+}
+
+struct flexTask{
+  int taskNumber;     // stores the task
+  float STRAIGHT_RESISTANCE;
+  float BEND_RESISTANCE;
+  int set_degrees;    // Stores  what degree to set the motor to
+  //static const int RECORD_SIZE = 10;  // the bigger this number is the more stray inputs are removed at the cost of delay
+  //bool record_sets[RECORD_SIZE];    // used to average the value for the degree    
+  //int record_index = 0;   
+  int flexADC;
+  int increasing = 0;
+  void setVal(float Straight, float Bent, int inc)
+  {
+    STRAIGHT_RESISTANCE = Straight;
+    BEND_RESISTANCE = Bent;
+    increasing = inc;
+  }
+
+  void getCase()
+  {
+
+      byte t = (byte)taskNumber - 4;
+      selectMuxPin(t);
+      flexADC = analogRead(A0);     
+
+    float flexV = flexADC * VCC / 1023.0;
+    float flexR = R_DIV * (VCC / flexV - 1.0);
+    // Serial.println("original: " + String(flexADC));
+    //  Serial.println("Resistance: " + String(flexR) + " ohms");
+
+    if(increasing == 0)
+    {
+      set_degrees = map(flexR, STRAIGHT_RESISTANCE, BEND_RESISTANCE, 0, 180);    
+    }
+    else
+    {
+      set_degrees = map(flexR,  BEND_RESISTANCE, STRAIGHT_RESISTANCE, 0, 180);
+    }
+    set_degrees = constrain(set_degrees, 20, 160);
+    //  Serial.println("Bend: " + String(set_degrees) + " degrees"); 
+    degreesAngle[taskNumber] = set_degrees; //setting to 180 or 0 may change the cone
+  }
+};
+
+struct flexTask flexPerform[TOTAL_FLEX_TASKS];
+
+void FlexSensorTask(int task){
+  flexPerform[task - 4].taskNumber = task;
+  flexPerform[task - 4].setVal(FlexValues[task - 4][0], FlexValues[task - 4][1], FlexValues[task - 4][2]);
+  
+ // flexPerform[task].flexADC = analogRead(FlexPorts[task]);
+
+  flexPerform[task - 4].getCase();
 
 }
-                                                                                          //6       5         7          4
-void (*tasks[])(int) = {FlexSensorTask, FlexSensorTask, FlexSensorTask, FlexSensorTask, PitchTask, PitchTask, RollTask, RollTask};
 
+void (*tasks[])(int) = {PitchTask, PitchTask, RollTask, RollTask, FlexSensorTask, FlexSensorTask, FlexSensorTask, FlexSensorTask, FlexSensorTask};
 
+int taskCount = 9;
 void genericOS()
 {
 
   while(true)
   {
-    for(int t = 0; t<TASK_COUNT; ++t)
+    for(int t = 0; t<taskCount; ++t)
     {
         (*tasks[t])(t);          
     }
+    Serial.println(degreesAngle[0]);
+     Serial.println(degreesAngle[1]);
+     Serial.println(degreesAngle[2]);
+    Serial.println(degreesAngle[3]);
     radio.write(&degreesAngle, sizeof(degreesAngle));
-    Serial.print("roll: ");
-    Serial.println(degreesAngle[4]);    
+    
     while(flag_count < 10){} // intervals of 10ms
 //    cli(); // stop interrupts    
     flag_count = 0;
