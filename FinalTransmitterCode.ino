@@ -7,6 +7,11 @@
  * https://create.arduino.cc/projecthub/muhammad-aqib/nrf24l01-interfacing-with-arduino-wireless-communication-0c13d4
  * Author:Muhammad Aqib Dutt
  * 
+ * Mux_Analog_Output
+ * SparkFun Multiplexer Output Example
+ * Jim Lindblom @ SparkFun Electronics
+ * August 15, 2016
+ * https://github.com/sparkfun/74HC4051_8-Channel_Mux_Breakout
  * 
 */
 
