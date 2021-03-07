@@ -42,12 +42,13 @@ void setup() {
    servo1.attach(3, 1000, 2000);
    servo2.attach(4, 1000, 2000);
    servo3.attach(5, 1000, 2000); 
-//   servo4.attach(7, 1000, 2000); 
+   servo4.attach(7, 1000, 2000); 
 
-    servo0.write(90);
+    servo0.write(120);
     servo1.write(90);
-    servo2.write(90);
-    servo3.write(90);
+    servo2.write(0);
+    servo3.write(180);
+    servo4.write(180);
   
 
     delay(1000);
@@ -62,10 +63,9 @@ void loop()
     byte text[9];                 //Saving the incoming data
     radio.read(&text, sizeof(text));    //Reading the data
     
-    Serial.println(text[1]);
-    Serial.println(text[2]);
+    delay(200);
 
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 5; ++i)
     {
       SERVO_PORTS[i].write(text[i]);
     }
